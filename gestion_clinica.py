@@ -1,3 +1,16 @@
+"""
+GESTIÓN CLÍNICA - VERSIÓN 1.0
+
+Aplicación de gestión clínica desarrollada en Python y SQLite.
+
+Funciones:
+-Gestión de pacientes
+-Gestión de tratamientos
+-Historial clínico
+-Búsquedas avanzadas
+-Estadísticas
+"""
+
 import json
 import os
 import sqlite3
@@ -12,7 +25,11 @@ else:
     {"nombre": "Valentina", "edad": 9, "tratamiento": "Ortodoncia"},
     {"nombre": "Rafael", "edad": 4, "tratamiento": "Obturación"}
 ]
-    
+
+#==========================
+# FUNCIONES DE PACIENTES
+#==========================
+
 def ver_pacientes():
 
     conexion = sqlite3. connect("clinica.db")
@@ -154,6 +171,12 @@ def contar_pacientes():
     print("Número de pacientes:", total)
 
     conexion.close()
+
+
+#============================
+# FUNCIONES DE TRATAMIENTOS
+#============================
+
 
 def buscar_tratamiento():
 
@@ -348,6 +371,12 @@ def ver_tratamientos_pacientes():
 
     conexion.close()    
 
+
+#==========================
+# FUNCIONES DE BÚSQUEDA
+#==========================
+
+
 def buscar_nombre_parcial():
 
     texto = input("Introduce parte del nombre: ")
@@ -431,6 +460,10 @@ def buscar_rango_edades():
     
     conexion.close()
 
+
+#==========================
+# MENÚ PRINCIPAL
+#==========================
 
 
 while True:
