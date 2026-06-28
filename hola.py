@@ -1,3 +1,7 @@
-alquiler = int(input("¿Cuánto cobras de alquiler al mess?"))
-anual = alquiler * 12
-print("Ingresos anuales:", anual, "€")
+precio = float(input("Precio del tratamiento: "))
+pagado = float(input("Cantidad pagada: "))
+
+cambio = pagado - precio
+
+print("Cambio o devolver:", cambio, "€")
+

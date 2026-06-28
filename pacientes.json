@@ -1,0 +1,32 @@
+[
+    {
+        "nombre": "Natalia",
+        "edad": 37,
+        "tratamiento": "Limpieza"
+    },
+    {
+        "nombre": "Luis",
+        "edad": 6,
+        "tratamiento": "Revisi\u00f3n"
+    },
+    {
+        "nombre": "Valentina",
+        "edad": 9,
+        "tratamiento": "Ortodoncia"
+    },
+    {
+        "nombre": "Rafael",
+        "edad": 4,
+        "tratamiento": "Obturaci\u00f3n"
+    },
+    {
+        "nombre": "pepito",
+        "edad": 28,
+        "tratamiento": "invisling"
+    },
+    {
+        "nombre": "vega ",
+        "edad": 11,
+        "tratamiento": "pulpotomia"
+    }
+]
