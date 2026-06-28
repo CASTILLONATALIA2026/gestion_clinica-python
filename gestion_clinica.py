@@ -174,7 +174,7 @@ while True:
         buscar_tratamiento()
     
     elif opcion == "12":
-        buscar_mayores()
+        buscar_por_edad()
 
     elif opcion == "13":
         añadir_tratamiento()
