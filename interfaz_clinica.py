@@ -67,7 +67,8 @@ def eliminar_paciente():
     if len(seleccion) == 0:
         return
 
-    tabla.delete(seleccion[0])
+    for fila in seleccion:
+        tabla.delete(fila)
 
     guardar_pacientes_json()
 
@@ -105,7 +106,43 @@ tabla.column("Tratamiento", width=250, anchor="center")
 
 tabla.pack(pady=20)
 
+def abrir_ventana_añadir():
+    ventana_nueva = tk.Toplevel(ventana)
+    ventana_nueva.title("Añadir paciente")
+    ventana_nueva.geometry("350x250")
 
+    tk.Label(ventana_nueva, text="Nombre").pack()
+    entrada_nombre = tk.Entry(ventana_nueva)
+    entrada_nombre.pack(pady=5)
+
+    tk.Label(ventana_nueva, text="Edad").pack()
+    entrada_edad = tk.Entry(ventana_nueva)
+    entrada_edad.pack(pady=5)
+
+    tk.Label(ventana_nueva, text="Tratamiento").pack()
+    entrada_tratamiento = tk.Entry(ventana_nueva)
+    entrada_tratamiento.pack(pady=5)
+
+    def guardar():
+        nombre = entrada_nombre.get()
+        edad = entrada_edad.get()
+        tratamiento = entrada_tratamiento.get()
+
+        tabla.insert(
+            "",
+            tk.END,
+            values=(nombre, edad, tratamiento)
+        )
+
+        guardar_pacientes_json()
+        ventana_nueva.destroy()
+    
+    tk.Button(
+        ventana_nueva,
+        text="Guardar paciente",
+        command=guardar
+    ).pack(pady=10)
+    
 boton_ver = tk.Button(
     ventana,
     text="Ver pacientes",
@@ -118,7 +155,7 @@ boton_añadir = tk.Button(
     ventana,
     text="Añadir paciente",
     width=25,
-    command=añadir_paciente
+    command=abrir_ventana_añadir
 )
 boton_añadir.pack(pady=10)
 
