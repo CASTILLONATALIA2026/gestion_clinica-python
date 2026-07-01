@@ -23,7 +23,7 @@ def mostrar_pacientes_ventana():
                 paciente["tratamiento"]
             )
         )
-        
+    actualizar_contador()
         
 
 def cargar_pacientes_json():
@@ -43,6 +43,7 @@ def cargar_pacientes_json():
             paciente["tratamiento"]
         )
     )
+    actualizar_contador()
 
 def guardar_pacientes_json():
     pacientes = []
@@ -61,6 +62,33 @@ def guardar_pacientes_json():
     with open("pacientes.json", "w", encoding="utf-8") as archivo:
         json.dump(pacientes, archivo, indent=4, ensure_ascii=False)
 
+def filtrar_pacientes(event=None):
+
+    texto = entrada_busqueda.get().lower()
+
+    for fila in tabla.get_children():
+        tabla.delete(fila)
+
+    with open("pacientes.json", "r", encoding="utf-8") as archivo:
+        pacientes = json.load(archivo)
+    
+    for paciente in pacientes:
+
+        if texto in paciente["nombre"].lower():
+
+            tabla.insert(
+                "",
+                tk.END,
+                values=(
+                    paciente["nombre"],
+                    paciente["edad"],
+                    paciente["tratamiento"]
+                )
+            )   
+
+    actualizar_contador()
+
+
 def eliminar_paciente():
     seleccion = tabla.selection()
 
@@ -71,6 +99,7 @@ def eliminar_paciente():
         tabla.delete(fila)
 
     guardar_pacientes_json()
+    actualizar_contador()
 
 from modulos.pacientes import ver_pacientes, añadir_paciente, buscar_paciente
 
@@ -82,12 +111,36 @@ ventana.geometry("900x600")
 
 titulo = tk.Label(
     ventana,
-    text="Gestión Clínica",
-    font=("Arial", 22)
+    text="DentalAI Manager",
+    font=("Segoe UI", 20, "bold")
 )
-titulo.pack(pady=20)
+titulo.pack(pady=15)
+
+contador_pacientes = tk.Label(
+    ventana,
+    text="Pacientes registrados: 0",
+    font=("Segoe UI", 10, "bold")
+)
+
+contador_pacientes.pack(pady=5)
+
+tk.Label(
+    ventana,
+    text="Gestión clínica inteligente",
+    font=("Segoe UI", 10)
+).pack()
+
 #caja_resultados = tk.Text(ventana, width=55, height=10)
 #caja_resultados.pack(pady=10)
+
+tk.Label(
+    ventana,
+    text="Buscar paciente",
+).pack()
+
+entrada_busqueda = tk.Entry(ventana, width=40)
+entrada_busqueda.pack(pady=5)
+entrada_busqueda.bind("<KeyRelease>", filtrar_pacientes)
 
 tabla = ttk.Treeview(
     ventana,
@@ -105,6 +158,14 @@ tabla.column("Edad" , width=80, anchor="center")
 tabla.column("Tratamiento", width=250, anchor="center")
 
 tabla.pack(pady=20)
+
+def actualizar_contador():
+    total = len(tabla.get_children())
+    contador_pacientes.config(
+        text=f"Pacientes registrados: {total}"
+    )
+
+
 
 def abrir_ventana_añadir():
     ventana_nueva = tk.Toplevel(ventana)
