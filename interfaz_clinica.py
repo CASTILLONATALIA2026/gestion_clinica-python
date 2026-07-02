@@ -1,8 +1,26 @@
 import tkinter as tk
 from tkinter import ttk
 import json
+import sqlite3
 
 import pacientes
+
+def crear_base_datos():
+    conexion = sqlite3.connect("clinica.db")
+    cursor = conexion.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS pacientes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            edad INTEGER NOT NULL,
+            tratamiento TEXT NOT NULL,
+            proxima_cita TEXT
+        )
+    """)
+
+    conexion.commit()
+    conexion.close()
 
 def mostrar_pacientes_ventana():
     for fila in tabla.get_children():
@@ -341,4 +359,5 @@ def abrir_ficha_paciente(event=None):
     ).pack(pady=15)
 
 tabla.bind("<Double-1>", abrir_ficha_paciente)
+crear_base_datos()
 ventana.mainloop()
