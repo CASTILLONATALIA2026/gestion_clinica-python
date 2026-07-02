@@ -42,7 +42,8 @@ def cargar_pacientes_json():
             values=(
             paciente["nombre"],
             paciente["edad"],
-            paciente["tratamiento"]
+            paciente["tratamiento"],
+            paciente.get("proxima_cita", "")
         )
     )
     actualizar_contador()
@@ -146,9 +147,8 @@ entrada_busqueda.bind("<KeyRelease>", filtrar_pacientes)
 
 tabla = ttk.Treeview(
     ventana,
-    columns=("Nombre", "Edad", "Tratamiento"),
-    show="headings",
-    height=8
+    columns=("Nombre", "Edad", "Tratamiento", "Próxima cita"),
+    show="headings"
 )
 
 orden_ascendente = True
@@ -184,9 +184,14 @@ tabla.heading("Nombre", text="Nombre", command=ordenar_por_nombre)
 tabla.heading("Edad", text="Edad")
 tabla.heading("Tratamiento", text="Tratamiento")
 
+tabla.heading("Próxima cita", text="Próxima cita")
+              
+
 tabla.column("Nombre", width=250, anchor="center")
 tabla.column("Edad" , width=80, anchor="center")
 tabla.column("Tratamiento", width=250, anchor="center")
+
+tabla.column("Próxima cita", width=120, anchor="center")
 
 tabla.pack(pady=20)
 
@@ -215,15 +220,21 @@ def abrir_ventana_añadir():
     entrada_tratamiento = tk.Entry(ventana_nueva)
     entrada_tratamiento.pack(pady=5)
 
+    tk.Label(ventana_nueva, text="Proxima cita").pack()
+    entrada_proxima_cita = tk.Entry(ventana_nueva)
+    entrada_proxima_cita.pack(pady=5)
+
+
     def guardar():
         nombre = entrada_nombre.get()
         edad = entrada_edad.get()
         tratamiento = entrada_tratamiento.get()
+        proxima_cita = entrada_proxima_cita.get()
 
         tabla.insert(
             "",
             tk.END,
-            values=(nombre, edad, tratamiento)
+            values=(nombre, edad, tratamiento, proxima_cita)
         )
 
         guardar_pacientes_json()

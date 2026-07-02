@@ -2,7 +2,7 @@
     {
         "nombre": "Luis",
         "edad": "8",
-        "tratamiento": "Obturacion"
+        "tratamiento": "Revision"
     },
     {
         "nombre": "Valentina",
@@ -20,8 +20,13 @@
         "tratamiento": "Limpieza"
     },
     {
-        "nombre": "Vega ",
-        "edad": "10",
-        "tratamiento": "Invisling"
+        "nombre": "Isa ",
+        "edad": "50",
+        "tratamiento": "Ferula Michigan"
+    },
+    {
+        "nombre": "Alberto",
+        "edad": "50",
+        "tratamiento": "Injerto"
     }
 ]
