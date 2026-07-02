@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk
 import json
 
+import pacientes
+
 def mostrar_pacientes_ventana():
     for fila in tabla.get_children():
         tabla.delete(fila)
@@ -149,7 +151,36 @@ tabla = ttk.Treeview(
     height=8
 )
 
-tabla.heading("Nombre", text="Nombre")
+orden_ascendente = True
+
+def ordenar_por_nombre():
+    global orden_ascendente
+
+    filas = []
+
+    for fila in tabla.get_children():
+        datos = tabla.item(fila, "values")
+        filas.append(datos)
+
+    filas.sort(
+        key=lambda paciente: paciente[0]. lower(),
+        reverse=not orden_ascendente
+    )
+    for fila in tabla.get_children():
+        tabla.delete(fila)
+
+    for paciente in filas:
+        tabla.insert(
+            "",
+            tk.END,
+            values=paciente
+        )
+
+    orden_ascendente = not orden_ascendente
+
+
+
+tabla.heading("Nombre", text="Nombre", command=ordenar_por_nombre)
 tabla.heading("Edad", text="Edad")
 tabla.heading("Tratamiento", text="Tratamiento")
 
@@ -229,13 +260,6 @@ boton_eliminar = tk.Button(
 boton_eliminar.pack(pady=10)
 
 
-boton_buscar = tk.Button(
-    ventana,
-    text="Buscar paciente",
-    width=25,
-    command=buscar_paciente
-)
-boton_buscar.pack(pady=10)
 boton_json = tk.Button(
     ventana,
     text="Cargar JSON",
