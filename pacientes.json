@@ -1,32 +1,22 @@
 [
     {
-        "nombre": "Luis",
-        "edad": "8",
-        "tratamiento": "Revision"
-    },
-    {
         "nombre": "Valentina",
+        "edad": "9",
+        "tratamiento": "Obturacion"
+    },
+    {
+        "nombre": "Luis",
         "edad": "6",
-        "tratamiento": "Revision"
+        "tratamiento": "Invisling"
     },
     {
-        "nombre": "Rafael",
+        "nombre": "Rafael ",
         "edad": "4",
-        "tratamiento": "Primera cita"
+        "tratamiento": "Revision "
     },
     {
-        "nombre": "Natalia",
-        "edad": "37",
-        "tratamiento": "Limpieza"
-    },
-    {
-        "nombre": "Isa ",
-        "edad": "50",
-        "tratamiento": "Ferula Michigan"
-    },
-    {
-        "nombre": "Alberto",
-        "edad": "50",
-        "tratamiento": "Injerto"
+        "nombre": "Vega ",
+        "edad": "11",
+        "tratamiento": "Obturacion"
     }
 ]

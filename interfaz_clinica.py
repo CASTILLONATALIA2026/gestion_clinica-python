@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 import json
 import sqlite3
 
@@ -26,23 +26,25 @@ def mostrar_pacientes_ventana():
     for fila in tabla.get_children():
         tabla.delete(fila)
 
-    pacientes = [
-        {"nombre": "Luis", "edad": 8, "tratamiento": "Revision"},
-        {"nombre": "Valentina", "edad": 6, "tratamiento": "Revision"},
-        {"nombre": "Rafael", "edad": 4, "tratamiento": "Primera cita"},
-        {"nombre": "Natalia", "edad": 37, "tratamiento": "Limpieza"},
-    ]
+    conexion = sqlite3.connect("clinica.db")
+    cursor = conexion.cursor()
+
+    cursor.execute("""
+    SELECT id, nombre, edad, tratamiento, proxima_cita
+    FROM pacientes
+    """)
+
+    pacientes = cursor.fetchall()
+
+    conexion.close()
 
     for paciente in pacientes:
         tabla.insert(
             "",
             tk.END,
-            values=(
-                paciente["nombre"],
-                paciente["edad"],
-                paciente["tratamiento"]
+            values=paciente
             )
-        )
+        
     actualizar_contador()
         
 
@@ -165,7 +167,7 @@ entrada_busqueda.bind("<KeyRelease>", filtrar_pacientes)
 
 tabla = ttk.Treeview(
     ventana,
-    columns=("Nombre", "Edad", "Tratamiento", "Próxima cita"),
+    columns=("ID", "Nombre", "Edad", "Tratamiento", "Próxima cita"),
     show="headings"
 )
 
@@ -197,14 +199,14 @@ def ordenar_por_nombre():
     orden_ascendente = not orden_ascendente
 
 
-
+tabla.heading("ID", text="ID")
 tabla.heading("Nombre", text="Nombre", command=ordenar_por_nombre)
 tabla.heading("Edad", text="Edad")
 tabla.heading("Tratamiento", text="Tratamiento")
 
 tabla.heading("Próxima cita", text="Próxima cita")
               
-
+tabla.column("ID", width=40, anchor="center")
 tabla.column("Nombre", width=250, anchor="center")
 tabla.column("Edad" , width=80, anchor="center")
 tabla.column("Tratamiento", width=250, anchor="center")
@@ -249,11 +251,24 @@ def abrir_ventana_añadir():
         tratamiento = entrada_tratamiento.get()
         proxima_cita = entrada_proxima_cita.get()
 
+        conexion = sqlite3.connect("clinica.db")
+        cursor = conexion.cursor()
+
+        cursor.execute("""
+            INSERT INTO pacientes (nombre, edad, tratamiento, proxima_cita)
+            VALUES (?, ?, ?, ?)
+        """, (nombre, edad, tratamiento, proxima_cita))
+
+        conexion.commit()
+        conexion.close()
+
+
         tabla.insert(
             "",
             tk.END,
             values=(nombre, edad, tratamiento, proxima_cita)
         )
+        actualizar_contador()
 
         guardar_pacientes_json()
         ventana_nueva.destroy()
@@ -306,6 +321,22 @@ boton_salir = tk.Button(
     command=ventana.destroy
 )
 boton_salir.pack(pady=10)
+
+def mostrar_estadisticas():
+    total = len(tabla.get_children())
+
+    messagebox.showinfo(
+        "Estadisticas",
+        f"Pacientes registrados: {total}"
+    )
+boton_estadisticas = tk.Button(
+    ventana,
+    text="Estadisticas",
+    width=25,
+    command=mostrar_estadisticas
+)
+
+boton_estadisticas.pack(pady=10)
 
 def abrir_ficha_paciente(event=None):
     seleccion = tabla.selection()
