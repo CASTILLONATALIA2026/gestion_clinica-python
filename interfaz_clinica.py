@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import json
 import sqlite3
-
+from openpyxl import Workbook
 import pacientes
 
 def crear_base_datos():
@@ -32,6 +32,7 @@ def mostrar_pacientes_ventana():
     cursor.execute("""
     SELECT id, nombre, edad, tratamiento, proxima_cita
     FROM pacientes
+    ORDER BY nombre
     """)
 
     pacientes = cursor.fetchall()
@@ -183,7 +184,7 @@ def ordenar_por_nombre():
         filas.append(datos)
 
     filas.sort(
-        key=lambda paciente: paciente[0]. lower(),
+        key=lambda paciente: paciente[1]. lower(),
         reverse=not orden_ascendente
     )
     for fila in tabla.get_children():
@@ -273,11 +274,43 @@ def abrir_ventana_añadir():
         guardar_pacientes_json()
         ventana_nueva.destroy()
     
-    tk.Button(
-        ventana_nueva,
-        text="Guardar paciente",
-        command=guardar
-    ).pack(pady=10)
+def exportar_a_excel():
+    conexion = sqlite3.connect("clinica.db")
+    cursor = conexion.cursor()
+
+    cursor.execute("""
+        SELECT nombre, edad, tratamiento, proxima_cita
+        FROM pacientes
+        ORDER BY nombre
+    """)
+
+    pacientes = cursor.fetchall()
+    conexion.close()
+
+    libro_excel = Workbook()
+    hoja = libro_excel.active
+    hoja.title = "Pacientes"
+
+    hoja.append(["Nombre", "Edad", "Tratamiento", "Próxima cita"])
+
+    for paciente in pacientes:
+        hoja.append(paciente)
+
+        libro_excel.save("pacientes.xlsx")
+        #messagebox.showinfo(
+            #"Excel",
+            #"Archivo pacientes.xlsx creado correctamente"
+        #mostrar_pacientes_ventana()
+        #actualizar_contador()
+
+        
+        #)
+        #messagebox.showinfo(
+            #"Exportación a completada",
+            #"Archivo pacientes.xlsx creado correctamente"
+        #)
+    
+    
     
 boton_ver = tk.Button(
     ventana,
@@ -303,6 +336,13 @@ boton_eliminar = tk.Button(
 )
 boton_eliminar.pack(pady=10)
 
+boton_excel = tk.Button(
+    ventana,
+    text="Exportar a Excel",
+    width=25,
+    command=exportar_a_excel
+)
+boton_excel.pack(pady=10)
 
 boton_json = tk.Button(
     ventana,
@@ -322,22 +362,42 @@ boton_salir = tk.Button(
 )
 boton_salir.pack(pady=10)
 
-def mostrar_estadisticas():
-    total = len(tabla.get_children())
 
-    messagebox.showinfo(
-        "Estadisticas",
-        f"Pacientes registrados: {total}"
-    )
+
+def mostrar_estadisticas():
+    conexion = sqlite3.connect("clinica.db")
+    cursor = conexion.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM pacientes")
+    total = cursor.fetchone()[0]
+
+    cursor.execute("SELECT AVG(edad) FROM pacientes")
+    edad_media = cursor.fetchone()[0]
+                   
+    cursor.execute("SELECT tratamiento, COUNT(*) AS cantidad FROM pacientes GROUP BY tratamiento ORDER BY cantidad DESC LIMIT 1")
+
+
+    tratamiento_frecuente = cursor.fetchone()
+    conexion.close()
+
+    texto = f"Pacientes registrados {total}\n"
+    texto += f"Edad promedio: {edad_media:.1f}\n"
+
+    if tratamiento_frecuente:
+        texto += f"Tratamiento más frecuente: {tratamiento_frecuente[0]}"
+    else: 
+        texto +="No hay tratamientos registrados"
+
+    messagebox.showinfo("Estadísticas", texto)
+
 boton_estadisticas = tk.Button(
     ventana,
-    text="Estadisticas",
+    text="Mostrar estadísticas",
     width=25,
     command=mostrar_estadisticas
 )
-
 boton_estadisticas.pack(pady=10)
-
+       
 def abrir_ficha_paciente(event=None):
     seleccion = tabla.selection()
 
@@ -355,31 +415,44 @@ def abrir_ficha_paciente(event=None):
     
 
     entry_nombre = tk.Entry(ventana_ficha, width=30)
-    entry_nombre.insert(0, datos[0])
+    entry_nombre.insert(0, datos[1])
     entry_nombre.pack(pady=5)
 
     tk.Label(ventana_ficha, text="Edad"). pack()
 
     entry_edad = tk.Entry(ventana_ficha, width=30)
-    entry_edad.insert(0, datos[1])
+    entry_edad.insert(0, datos[2])
     entry_edad.pack(pady=5)
 
     tk.Label(ventana_ficha, text="Tratamiento").pack()
 
     entry_tratamiento = tk.Entry(ventana_ficha, width=30)
-    entry_tratamiento.insert(0, datos[2])
+    entry_tratamiento.insert(0, datos[3])
     entry_tratamiento.pack(pady=5)
 
     def guardar_cambios():
         nuevo_nombre = entry_nombre.get()
         nueva_edad = entry_edad.get()
         nuevo_tratamiento = entry_tratamiento.get()
+        id_paciente = datos[0]
 
-        tabla.item(
-            seleccion[0],
-            values=(nuevo_nombre, nueva_edad, nuevo_tratamiento)
+        conexion = sqlite3.connect("clinica.db")
+        cursor = conexion.cursor()
+
+        cursor.execute(
+            "UPDATE pacientes SET nombre=?, edad=?, tratamiento=? WHERE id=?",
+            (
+                nuevo_nombre,
+                nueva_edad,
+                nuevo_tratamiento,
+                id_paciente
             )
-        guardar_pacientes_json()
+        )
+
+        conexion.commit()
+        conexion.close()
+        mostrar_pacientes_ventana()
+        actualizar_contador()
 
         ventana_ficha.destroy()
 
