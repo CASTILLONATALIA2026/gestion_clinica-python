@@ -1,22 +1,27 @@
 [
     {
-        "nombre": "Valentina",
-        "edad": "9",
-        "tratamiento": "Obturacion"
+        "nombre": "1",
+        "edad": "Pepita prueba ",
+        "tratamiento": "25"
     },
     {
-        "nombre": "Luis",
-        "edad": "6",
-        "tratamiento": "Invisling"
+        "nombre": "2",
+        "edad": "Eusebio ",
+        "tratamiento": "60"
     },
     {
-        "nombre": "Rafael ",
-        "edad": "4",
-        "tratamiento": "Revision "
+        "nombre": "3",
+        "edad": "Valentina",
+        "tratamiento": "9"
     },
     {
-        "nombre": "Vega ",
-        "edad": "11",
-        "tratamiento": "Obturacion"
+        "nombre": "4",
+        "edad": "Luis",
+        "tratamiento": "6"
+    },
+    {
+        "nombre": "5",
+        "edad": "Rafael ",
+        "tratamiento": "4"
     }
 ]

@@ -4,6 +4,7 @@ import json
 import sqlite3
 from openpyxl import Workbook
 import pacientes
+from tkinter import messagebox
 
 def crear_base_datos():
     conexion = sqlite3.connect("clinica.db")
@@ -32,7 +33,7 @@ def mostrar_pacientes_ventana():
     cursor.execute("""
     SELECT id, nombre, edad, tratamiento, proxima_cita
     FROM pacientes
-    ORDER BY nombre
+    ORDER BY id ASC
     """)
 
     pacientes = cursor.fetchall()
@@ -118,20 +119,50 @@ def eliminar_paciente():
 
     if len(seleccion) == 0:
         return
+    
+    respuesta = messagebox.askyesno(
+        "Confirmar eliminación",
+        "¿Está seguro de que desea eliminar el paciente seleccionado?"
+    )
+
+    if not respuesta:
+        return
 
     for fila in seleccion:
+        valores = tabla.item(fila, "values")
+        id_paciente = valores[0]
+
+        conexion = sqlite3.connect("clinica.db")
+        cursor = conexion.cursor()
+
+        cursor.execute(
+            "DELETE FROM pacientes WHERE id=?",
+            (id_paciente,)
+        )
+
+        conexion.commit()
+        conexion.close()
+
         tabla.delete(fila)
 
-    guardar_pacientes_json()
+    
     actualizar_contador()
 
-from modulos.pacientes import ver_pacientes, añadir_paciente, buscar_paciente
+from modulos.pacientes import modificar_paciente, ver_pacientes, añadir_paciente, buscar_paciente
 
 
 
 ventana = tk.Tk()
 ventana.title("Gestión Clínica")
-ventana.geometry("900x600")
+ventana.geometry("1100x850")
+
+barra_menu = tk.Menu(ventana)
+ventana.config(menu=barra_menu)
+
+menu_archivo = tk.Menu(barra_menu, tearoff=0)
+barra_menu.add_cascade(label="Archivo", menu=menu_archivo)
+
+menu_archivo.add_command(label="Salir", command=ventana.destroy)
 
 titulo = tk.Label(
     ventana,
@@ -227,7 +258,7 @@ def actualizar_contador():
 def abrir_ventana_añadir():
     ventana_nueva = tk.Toplevel(ventana)
     ventana_nueva.title("Añadir paciente")
-    ventana_nueva.geometry("350x250")
+    ventana_nueva.geometry("350x350")
 
     tk.Label(ventana_nueva, text="Nombre").pack()
     entrada_nombre = tk.Entry(ventana_nueva)
@@ -263,16 +294,27 @@ def abrir_ventana_añadir():
         conexion.commit()
         conexion.close()
 
-
-        tabla.insert(
-            "",
-            tk.END,
-            values=(nombre, edad, tratamiento, proxima_cita)
-        )
+        mostrar_pacientes_ventana()
         actualizar_contador()
-
-        guardar_pacientes_json()
         ventana_nueva.destroy()
+
+    boton_guardar = tk.Button(
+            ventana_nueva,
+            text="Guardar",
+            width=20,
+            command=guardar
+    )
+    boton_guardar.pack(pady=10)   
+
+        #tabla.insert(
+            #"",
+            #tk.END,
+            #values=(nombre, edad, tratamiento, proxima_cita)
+        #)
+        #actualizar_contador()
+
+        #guardar_pacientes_json()
+        #ventana_nueva.destroy()
     
 def exportar_a_excel():
     conexion = sqlite3.connect("clinica.db")
@@ -309,58 +351,72 @@ def exportar_a_excel():
             #"Exportación a completada",
             #"Archivo pacientes.xlsx creado correctamente"
         #)
-    
+def modificar_paciente():
+    seleccionado = tabla.focus()
+
+    if not seleccionado:
+        messagebox.showwarning(
+            "Aviso",
+            "Seleccione un paciente para modificar"
+        )
+        return
+    abrir_ficha_paciente(None)
     
     
 boton_ver = tk.Button(
     ventana,
     text="Ver pacientes",
-    width=25,
+    width=35,
     command=mostrar_pacientes_ventana
 )
-boton_ver.pack(pady=10)
+boton_ver.pack(pady=6)
 
 boton_añadir = tk.Button(
     ventana,
     text="Añadir paciente",
-    width=25,
+    width=35,
     command=abrir_ventana_añadir
 )
-boton_añadir.pack(pady=10)
+boton_añadir.pack(pady=6)
+
+boton_modificar = tk.Button(
+    ventana,
+    text="Modificar paciente",
+    width=35,
+    command=modificar_paciente
+)
+boton_modificar.pack(pady=6)
+
+
 
 boton_eliminar = tk.Button(
     ventana,
     text="Eliminar paciente",
-    width=25,
+    width=35,
     command=eliminar_paciente
 )
-boton_eliminar.pack(pady=10)
+boton_eliminar.pack(pady=6)
 
 boton_excel = tk.Button(
     ventana,
     text="Exportar a Excel",
-    width=25,
+    width=35,
     command=exportar_a_excel
 )
-boton_excel.pack(pady=10)
+boton_excel.pack(pady=6)
 
 boton_json = tk.Button(
     ventana,
     text="Cargar JSON",
-    width=25,
+    width=35,
 command=cargar_pacientes_json
 )
 
-boton_json.pack(pady=10)
+boton_json.pack(pady=6)
 
 
-boton_salir = tk.Button(
-    ventana,
-    text="Salir",
-    width=25,
-    command=ventana.destroy
-)
-boton_salir.pack(pady=10)
+
+
 
 
 
@@ -373,6 +429,12 @@ def mostrar_estadisticas():
 
     cursor.execute("SELECT AVG(edad) FROM pacientes")
     edad_media = cursor.fetchone()[0]
+
+    cursor.execute("SELECT tratamiento, COUNT(*) FROM pacientes WHERE edad < 18")
+    menores = cursor.fetchone()[0]
+
+    cursor.execute("SELECT tratamiento, COUNT(*) FROM pacientes WHERE edad >= 18")
+    mayores = cursor.fetchone()[0]
                    
     cursor.execute("SELECT tratamiento, COUNT(*) AS cantidad FROM pacientes GROUP BY tratamiento ORDER BY cantidad DESC LIMIT 1")
 
@@ -382,6 +444,9 @@ def mostrar_estadisticas():
 
     texto = f"Pacientes registrados {total}\n"
     texto += f"Edad promedio: {edad_media:.1f}\n"
+
+    texto += f"\nMenores de edad: {menores}\n"
+    texto += f"Mayores de edad: {mayores}\n\n"
 
     if tratamiento_frecuente:
         texto += f"Tratamiento más frecuente: {tratamiento_frecuente[0]}"
@@ -393,10 +458,22 @@ def mostrar_estadisticas():
 boton_estadisticas = tk.Button(
     ventana,
     text="Mostrar estadísticas",
-    width=25,
+    width=35,
     command=mostrar_estadisticas
 )
-boton_estadisticas.pack(pady=10)
+boton_estadisticas.pack(pady=6)
+
+boton_salir = tk.Button(
+    ventana,
+    text="Salir",
+    width=35,
+    command=ventana.destroy
+)
+boton_salir.pack(pady=6)
+
+
+
+
        
 def abrir_ficha_paciente(event=None):
     seleccion = tabla.selection()
@@ -463,5 +540,9 @@ def abrir_ficha_paciente(event=None):
     ).pack(pady=15)
 
 tabla.bind("<Double-1>", abrir_ficha_paciente)
+
 crear_base_datos()
+
+mostrar_pacientes_ventana()
+
 ventana.mainloop()
