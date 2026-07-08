@@ -361,7 +361,57 @@ def modificar_paciente():
         )
         return
     abrir_ficha_paciente(None)
-    
+
+def abrir_asistente_ia():
+    ventana_ia = tk.Toplevel(ventana)
+    ventana_ia.title("Asistente IA Dental")
+    ventana_ia.geometry("600x400")
+
+    tk.Label(
+        ventana_ia,
+        text="Describe los sintomas:"
+    ).pack(pady=10)
+
+    texto_sintomas = tk.Text(
+        ventana_ia,
+        width=60,
+        height=8
+    )
+    texto_sintomas.pack(pady=10)
+
+    resultado = tk.Label(
+        ventana_ia,
+        text="",
+        wraplength=500,
+        justify="left"
+    )
+    resultado.pack(pady=20)
+
+    def analizar():
+        sintomas = texto_sintomas.get("1.0", tk.END).lower()
+
+        if "caries" in sintomas:
+           recomendado = "Traramiento recomendado: Obturacion"
+        elif "sarro" in sintomas:
+            recomendado = "Traramiento recomendado: Limpieza dental"
+        elif "sangrado" in sintomas:
+            recomendado = "Traramiento recomendado: Valoracion periodontal"
+        elif "dolor" in sintomas:
+            recomendado = "Traramiento recomendado: Radiografia y revision"
+        elif "sensibilidad" in sintomas:
+            recomendado = "Traramiento recomendado: Valoracion de sensibilidad dental"
+        else:
+            recomendado = "No se ha podido determinar un tratamiento específico. Se recomienda revision clinica."
+
+        resultado.config(text=recomendado)
+    tk.Button(
+        ventana_ia,
+        text="Analizar",
+        width=20,
+        command=analizar
+    ).pack(pady=10)
+
+
     
 boton_ver = tk.Button(
     ventana,
@@ -413,6 +463,14 @@ command=cargar_pacientes_json
 )
 
 boton_json.pack(pady=6)
+
+boton_ia = tk.Button(
+    ventana,
+    text="Asistente IA Dental",
+    width=30,
+    command=abrir_asistente_ia
+)
+boton_ia.pack(pady=6)
 
 
 
