@@ -154,7 +154,7 @@ from modulos.pacientes import modificar_paciente, ver_pacientes, añadir_pacient
 
 ventana = tk.Tk()
 ventana.title("Gestión Clínica")
-ventana.geometry("1100x850")
+ventana.geometry("1200x900")
 
 barra_menu = tk.Menu(ventana)
 ventana.config(menu=barra_menu)
@@ -169,7 +169,15 @@ titulo = tk.Label(
     text="DentalAI Manager",
     font=("Segoe UI", 20, "bold")
 )
-titulo.pack(pady=15)
+titulo.pack(pady=10)
+
+subtitulo = tk.Label(
+    ventana,
+    text="Gestión clínica + IA dental",
+    font=("Segoe UI", 11)
+)
+subtitulo.pack()
+
 
 contador_pacientes = tk.Label(
     ventana,
@@ -389,21 +397,102 @@ def abrir_asistente_ia():
 
     def analizar():
         sintomas = texto_sintomas.get("1.0", tk.END).lower()
+        color ="black"
 
-        if "caries" in sintomas:
-           recomendado = "Traramiento recomendado: Obturacion"
-        elif "sarro" in sintomas:
-            recomendado = "Traramiento recomendado: Limpieza dental"
+        if "caries" in sintomas and "profunda" in sintomas:
+            recomendado = (
+                "Valoración orientativa:\n"
+                "Posible caries profunda.\n\n"
+                "Tratamiento sugerido:\n"
+                "-Radiografía periapical\n"
+                "-Valoración de endodoncia\n\n"
+                "Prioridad: Alta"
+            )
+            color = "red"
+
+        elif "dolor" in sintomas and (
+            "inflamación" in sintomas or "inflamación" in sintomas
+            ):
+                recomendado = (
+                    "Valoración orientatica:\n"
+                    "Posible proceso inflamatorio.\n\n"
+                    "Prioridad: Urgente"
+                )
+                color = "darkred"
+
+        elif "caries" in sintomas and "dolor" in sintomas:
+           recomendado = (
+               "Valoración orientatica:\n"
+               "Posible lesión de caries con afectación pulpar.\n\n"
+               "Tratamiento sugerido:\n"
+               "-Radiografía diagnóstica\n"
+               "-Obturación o valoración de endodoncia\n\n"
+               "Prioridad: Alta\n\n"
+               "Recomendación:\n"
+               "Solicitar valoración odontológica lo antes posible."
+           )
+           color = "orange"
+
+        elif "caries" in sintomas:
+            recomendado = (
+                "Valoración orientativa:\n"
+                "Posible lesión de caries.\n\n"
+                "Tratamiento sugerido:\n"
+                "-Exploración clínica\n"
+                "-Obturación si procede\n\n"
+                "Prioridad: Media"
+            )
+
+        elif "sarro" in sintomas or "placa" in sintomas:
+            recomendado = (
+                "Valoración orientativa:\n"
+                "Acumulación de placa o cálculo dental.\n\n"
+                "Tratamiento sugerido:\n"
+                "-Limpieza dental profesional\n"
+                "- Revisión periodontal\n\n"
+                "Prioridad: Baja"
+            )
+            color = "green"
+
         elif "sangrado" in sintomas:
-            recomendado = "Traramiento recomendado: Valoracion periodontal"
+            recomendado = (
+                "Valoración orientativa:\n"
+                "Posibles signos de inflamación gingival.\n\n"
+                "Traramiento sugerido:\n"
+                "-Valoración periodontal\n"
+                "-Higiene profesional\n\n"
+                "Prioridad: Media"
+            )
         elif "dolor" in sintomas:
-            recomendado = "Traramiento recomendado: Radiografia y revision"
+            recomendado = (
+                "Valoración orientativa:\n"
+                "El dolor dental puede tener distintas causas.\n\n"
+                "Tratamiento sugerido:\n"
+                "-Exploración clínica\n"
+                "-Radiografía diagnóstica \n\n"
+                "Prioridad: Alta"
+            )
         elif "sensibilidad" in sintomas:
-            recomendado = "Traramiento recomendado: Valoracion de sensibilidad dental"
+            recomendado =(
+            "Valoración orientativa:\n"
+            "Posible hipersensibilidad dental.\n\n"
+            "Tratamiento sugerido:\n"
+            "-Revisión clínica\n"
+            "-Valoración de desgaste, retracción o caries \n\n"
+            "Prioridad: Media"
+        )
+        
         else:
-            recomendado = "No se ha podido determinar un tratamiento específico. Se recomienda revision clinica."
+            recomendado = (
+            "No se ha podido determinar un tratamiento específico.\n\n"
+            "Se recomienda revision clinica."
+        )
 
-        resultado.config(text=recomendado)
+        resultado.config(
+            text=recomendado,
+            fg=color
+        )
+
     tk.Button(
         ventana_ia,
         text="Analizar",
@@ -419,7 +508,7 @@ boton_ver = tk.Button(
     width=35,
     command=mostrar_pacientes_ventana
 )
-boton_ver.pack(pady=6)
+boton_ver.pack(pady=3)
 
 boton_añadir = tk.Button(
     ventana,
@@ -427,7 +516,7 @@ boton_añadir = tk.Button(
     width=35,
     command=abrir_ventana_añadir
 )
-boton_añadir.pack(pady=6)
+boton_añadir.pack(pady=3)
 
 boton_modificar = tk.Button(
     ventana,
@@ -435,7 +524,7 @@ boton_modificar = tk.Button(
     width=35,
     command=modificar_paciente
 )
-boton_modificar.pack(pady=6)
+boton_modificar.pack(pady=3)
 
 
 
@@ -445,7 +534,7 @@ boton_eliminar = tk.Button(
     width=35,
     command=eliminar_paciente
 )
-boton_eliminar.pack(pady=6)
+boton_eliminar.pack(pady=3)
 
 boton_excel = tk.Button(
     ventana,
@@ -453,7 +542,7 @@ boton_excel = tk.Button(
     width=35,
     command=exportar_a_excel
 )
-boton_excel.pack(pady=6)
+boton_excel.pack(pady=3)
 
 boton_json = tk.Button(
     ventana,
@@ -462,15 +551,15 @@ boton_json = tk.Button(
 command=cargar_pacientes_json
 )
 
-boton_json.pack(pady=6)
+boton_json.pack(pady=3)
 
 boton_ia = tk.Button(
     ventana,
     text="Asistente IA Dental",
-    width=30,
+    width=35,
     command=abrir_asistente_ia
 )
-boton_ia.pack(pady=6)
+boton_ia.pack(pady=3)
 
 
 
@@ -519,7 +608,7 @@ boton_estadisticas = tk.Button(
     width=35,
     command=mostrar_estadisticas
 )
-boton_estadisticas.pack(pady=6)
+boton_estadisticas.pack(pady=3)
 
 boton_salir = tk.Button(
     ventana,
@@ -527,7 +616,7 @@ boton_salir = tk.Button(
     width=35,
     command=ventana.destroy
 )
-boton_salir.pack(pady=6)
+boton_salir.pack(pady=3)
 
 
 
