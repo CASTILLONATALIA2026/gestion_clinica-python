@@ -150,6 +150,47 @@ def eliminar_paciente():
 
 from modulos.pacientes import modificar_paciente, ver_pacientes, añadir_paciente, buscar_paciente
 
+def generar_informe():
+    seleccionado = tabla.focus()
+
+    if not seleccionado:
+        messagebox.showwarning(
+            "Aviso",
+            "Selecciona un paciente primero"
+        )
+        return
+
+    datos = tabla.item(seleccionado)["values"]
+
+    nombre = datos[1]
+    edad = datos[2]
+    tratamiento = datos[3]
+
+    informe = f"""
+INFORME CLINICO
+
+Paciente: {nombre}
+Edad: {edad}
+
+Tratamiento:
+{tratamiento}
+
+Observaciones:
+Paciente en seguimiento clínico.
+
+Recomendación:
+Continuar revisiones periódicas.
+
+Generado por DentalAI Manager.
+"""
+    ventana_informe = tk.Toplevel(ventana)
+    ventana_informe.title("Informe clínico")
+    ventana_informe.geometry("600x400")
+
+    texto = tk.Text(ventana_informe)
+    texto.pack(fill="both", expand=True)
+
+    texto.insert("1.0", informe)
 
 
 ventana = tk.Tk()
@@ -492,6 +533,8 @@ def abrir_asistente_ia():
             text=recomendado,
             fg=color
         )
+    
+    
 
     tk.Button(
         ventana_ia,
@@ -567,6 +610,8 @@ boton_ia.pack(pady=3)
 
 
 
+
+
 def mostrar_estadisticas():
     conexion = sqlite3.connect("clinica.db")
     cursor = conexion.cursor()
@@ -601,6 +646,14 @@ def mostrar_estadisticas():
         texto +="No hay tratamientos registrados"
 
     messagebox.showinfo("Estadísticas", texto)
+
+boton_informe = tk.Button(
+        ventana,
+        text="Generar informe clinico",
+        width=35,
+        command=generar_informe
+    )
+boton_informe.pack(pady=3)
 
 boton_estadisticas = tk.Button(
     ventana,
