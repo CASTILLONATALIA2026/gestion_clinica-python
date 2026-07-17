@@ -169,6 +169,7 @@ def generar_informe():
     nombre = datos[1]
     edad = datos[2]
     tratamiento = datos[3]
+    proxima_cita = datos[4]
 
     informe = f"""
 INFORME CLINICO
@@ -179,11 +180,15 @@ Edad: {edad}
 Tratamiento:
 {tratamiento}
 
+Próxima cita:
+{proxima_cita}
+
 Observaciones:
 Paciente en seguimiento clínico.
 
 Recomendación:
 Continuar revisiones periódicas.
+
 
 Generado por DentalAI Manager.
 """
@@ -244,7 +249,10 @@ Generado por DentalAI Manager.
         pdf.drawString(margen, y, f"Paciente: {nombre}")
 
         y-= 20
-        pdf.drawString(margen, y, f"Edad: {edad}años")
+        pdf.drawString(margen, y, f"Edad: {edad} años")
+
+        y-= 20
+        pdf.drawString(margen, y, f"Próxima cita: {proxima_cita}")
 
         # Tratamiento
         y -= 35
