@@ -5,6 +5,10 @@ import sqlite3
 from openpyxl import Workbook
 import pacientes
 from tkinter import messagebox
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from tkinter import filedialog
+from datetime import datetime 
 
 def crear_base_datos():
     conexion = sqlite3.connect("clinica.db")
@@ -185,14 +189,115 @@ Generado por DentalAI Manager.
 """
     ventana_informe = tk.Toplevel(ventana)
     ventana_informe.title("Informe clínico")
-    ventana_informe.geometry("600x400")
+    ventana_informe.geometry("600x500")
 
     texto = tk.Text(ventana_informe)
     texto.pack(fill="both", expand=True)
 
     texto.insert("1.0", informe)
 
+    
 
+    def guardar_pdf():
+        ruta = filedialog.asksaveasfilename(
+            defaultextension=".pdf",
+            filetypes=[("Archivo PDF", "*.pdf")],
+            initialfile=f"informe_{nombre}.pdf" 
+        )
+
+        if not ruta:
+            return
+        pdf = canvas.Canvas(ruta, pagesize=A4)
+
+        ancho, alto = A4
+        margen = 60
+        y = alto - 60
+
+        fecha_actual = datetime.now().strftime("%d/%m/%y")
+
+        pdf.setTitle(f"Informe clínico - {nombre}")
+
+        #Título principal
+        pdf.setFont("Helvetica-Bold",18)
+        pdf.drawString(margen, y, "DENTALAI MANAGER")
+
+        y -=25
+        pdf.setFont("Helvetica-Bold", 13)
+        pdf.drawString(margen, y, "INFORME CLÍNICO")
+
+        # Línea separadora
+        y-=12
+        pdf.line(margen, y, ancho - margen, y)
+        
+        # Fecha 
+        y -= 25
+        pdf. setFont("Helvetica", 10)
+        pdf.drawString(margen, y, f"Fecha: {fecha_actual}")
+
+        # Datos del paciente
+        y -=35
+        pdf.setFont("Helvetica", 11)
+        pdf.drawString(margen, y, "DATOS DEL PACIENTE")
+
+        y -= 22
+        pdf. setFont("Helvetica", 11)
+        pdf.drawString(margen, y, f"Paciente: {nombre}")
+
+        y-= 20
+        pdf.drawString(margen, y, f"Edad: {edad}años")
+
+        # Tratamiento
+        y -= 35
+        pdf. setFont("Helvetica-Bold", 11)
+        pdf.drawString(margen, y, "TRATAMIENTO")
+
+        y -= 22
+        pdf. setFont("Helvetica", 11)
+        pdf.drawString(margen, y, tratamiento)
+
+        # Observaciones 
+        y -= 35
+        pdf. setFont("Helvetica-Bold", 11)
+        pdf.drawString(margen, y, "OBSERVACIONES")
+
+        y -= 22
+        pdf. setFont("Helvetica", 11)
+        pdf.drawString(margen, y, f"Paciente en seguimiento clínico.")
+
+        # Recomendación
+        y -= 35
+        pdf. setFont("Helvetica-Bold", 11)
+        pdf.drawString(margen, y, "RECOMENDACIÓN")
+
+        y -= 22
+        pdf. setFont("Helvetica", 11)
+        pdf.drawString(margen, y, "Continuar revisiones periódicas.")
+
+        #Pie de página
+        pdf.setFont("Helvetica-Oblique", 9)
+        pdf.drawCentredString(
+            ancho / 2,
+            40,
+            "Documento generado por DentalAI Manager"
+        )
+        pdf.save()
+
+
+
+        messagebox.showinfo(
+            "PDF guardado",
+            "El informe se ha guardado correctamente."
+        )
+
+    boton_pdf = tk.Button(
+        ventana_informe,
+        text="Guardar informe en PDF",
+        command=guardar_pdf
+    )
+
+    boton_pdf.pack(pady=10)
+
+    
 ventana = tk.Tk()
 ventana.title("Gestión Clínica")
 ventana.geometry("1200x900")
