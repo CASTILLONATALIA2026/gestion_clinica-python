@@ -325,156 +325,98 @@ Generado por DentalAI Manager.
     boton_pdf.pack(pady=10)
 
 def abrir_analisis_ia():
-    """Abre el copiloto clínico y permite guardar el análisis en SQLite."""
     ventana_analisis = tk.Toplevel(ventana)
     ventana_analisis.title("DentalAI Copilot")
-    ventana_analisis.geometry("760x760")
-    ventana_analisis.resizable(False, True)
+    ventana_analisis.geometry("750x720")
+    ventana_analisis.resizable(False, False)
 
-    paciente_seleccionado = "Paciente no seleccionado"
-    seleccion = tabla.selection()
-    if seleccion:
-        valores = tabla.item(seleccion[0], "values")
-        if len(valores) > 1:
-            paciente_seleccionado = str(valores[1])
-
-    tk.Label(
+    titulo = tk.Label(
         ventana_analisis,
-        text="DentalAI Copilot",
+        text="Analizar caso con IA",
         font=("Segoe UI", 18, "bold")
-    ).pack(pady=(15, 2))
+    )
+    titulo.pack(pady=12)
 
-    tk.Label(
+    tk.Label(ventana_analisis, text="Síntomas principales").pack()
+    entrada_sintomas = tk.Text(ventana_analisis, height=4, width=70)
+    entrada_sintomas.pack(pady=4)
+
+    tk.Label(ventana_analisis, text="Duración de los síntomas").pack()
+    entrada_duracion = tk.Entry(ventana_analisis, width=40)
+    entrada_duracion.pack(pady=4)
+
+    tk.Label(ventana_analisis, text="Dolor de 0 a 10").pack()
+    entrada_dolor = tk.Entry(ventana_analisis, width=40)
+    entrada_dolor.pack(pady=4)
+
+    tk.Label(ventana_analisis, text="Antecedentes relevantes").pack()
+    entrada_antecedentes = tk.Text(ventana_analisis, height=3, width=70)
+    entrada_antecedentes.pack(pady=4)
+
+    tiene_fiebre = tk.BooleanVar()
+    tiene_inflamacion = tk.BooleanVar()
+
+    tk.Checkbutton(
         ventana_analisis,
-        text=f"Paciente: {paciente_seleccionado}",
-        font=("Segoe UI", 10, "bold")
-    ).pack(pady=(0, 10))
+        text="Fiebre",
+        variable=tiene_fiebre
+    ).pack()
 
-    formulario = tk.Frame(ventana_analisis)
-    formulario.pack(fill="x", padx=35)
-
-    tk.Label(formulario, text="Síntomas principales").pack(anchor="w")
-    entrada_sintomas = tk.Text(formulario, height=4, width=75, wrap="word")
-    entrada_sintomas.pack(fill="x", pady=(2, 8))
-
-    tk.Label(formulario, text="Duración de los síntomas").pack(anchor="w")
-    entrada_duracion = tk.Entry(formulario, width=45)
-    entrada_duracion.pack(anchor="w", pady=(2, 8))
-
-    tk.Label(formulario, text="Dolor de 0 a 10").pack(anchor="w")
-    entrada_dolor = tk.Entry(formulario, width=15)
-    entrada_dolor.pack(anchor="w", pady=(2, 8))
-
-    tk.Label(formulario, text="Antecedentes relevantes").pack(anchor="w")
-    entrada_antecedentes = tk.Text(formulario, height=3, width=75, wrap="word")
-    entrada_antecedentes.pack(fill="x", pady=(2, 8))
-
-    opciones = tk.Frame(formulario)
-    opciones.pack(anchor="w", pady=(0, 8))
-
-    tiene_fiebre = tk.BooleanVar(value=False)
-    tiene_inflamacion = tk.BooleanVar(value=False)
-
-    tk.Checkbutton(opciones, text="Fiebre", variable=tiene_fiebre).pack(side="left", padx=(0, 15))
-    tk.Checkbutton(opciones, text="Inflamación", variable=tiene_inflamacion).pack(side="left")
+    tk.Checkbutton(
+        ventana_analisis,
+        text="Inflamación",
+        variable=tiene_inflamacion
+    ).pack()
 
     resultado_ia = tk.Text(
         ventana_analisis,
-        height=12,
-        width=82,
-        wrap="word",
-        state="disabled"
+        height=8,
+        width=75,
+        wrap="word"
     )
-    resultado_ia.pack(fill="both", expand=True, padx=35, pady=(5, 10))
-
-    ultimo_analisis = {
-        "valoracion": "",
-        "prioridad": "",
-        "pruebas": "",
-        "alarmas": ""
-    }
-
-    def mostrar_resultado(texto):
-        resultado_ia.config(state="normal")
-        resultado_ia.delete("1.0", "end")
-        resultado_ia.insert("1.0", texto)
-        resultado_ia.config(state="disabled")
+    resultado_ia.pack(pady=6)
 
     def analizar_caso():
-        sintomas_originales = entrada_sintomas.get("1.0", "end").strip()
-        sintomas = sintomas_originales.lower()
+        sintomas = entrada_sintomas.get("1.0", "end").strip().lower()
         duracion = entrada_duracion.get().strip()
         dolor = entrada_dolor.get().strip()
         antecedentes = entrada_antecedentes.get("1.0", "end").strip()
 
-        if not sintomas_originales:
-            messagebox.showwarning("Aviso", "Escribe primero los síntomas.")
-            return
-
-        if dolor and (not dolor.isdigit() or not 0 <= int(dolor) <= 10):
-            messagebox.showwarning("Aviso", "El dolor debe ser un número entre 0 y 10.")
-            return
-
         prioridad = "Baja"
-        valoracion = "No se ha identificado una situación concreta con los datos aportados."
+        valoracion = "No se ha identificado una situación concreta."
         pruebas = "Exploración clínica general."
         alarmas = "No se han detectado señales de alarma."
-        informacion_faltante = []
-
-        dolor_num = int(dolor) if dolor.isdigit() else None
+        informacion_faltante = "Ninguna."
 
         if tiene_fiebre.get() and tiene_inflamacion.get():
             prioridad = "Urgente"
             valoracion = "Posible proceso infeccioso odontógeno."
-            pruebas = "Exploración clínica prioritaria y radiografía diagnóstica."
-            alarmas = "Fiebre e inflamación. Valorar atención urgente si existe inflamación facial o dificultad para tragar."
-        elif tiene_inflamacion.get() and dolor_num is not None and dolor_num >= 7:
+            pruebas = "Exploración clínica y radiografía diagnóstica."
+            alarmas = "Fiebre e inflamación."
+        elif tiene_inflamacion.get() and dolor.isdigit() and int(dolor) >= 7:
             prioridad = "Alta"
-            valoracion = "Dolor intenso acompañado de inflamación. Requiere valoración prioritaria."
+            valoracion = "Dolor intenso con inflamación. Requiere valoración prioritaria."
             pruebas = "Exploración clínica y radiografía diagnóstica."
             alarmas = "Dolor intenso e inflamación."
-        elif "dolor" in sintomas and dolor_num is not None and dolor_num >= 7:
+        elif "dolor" in sintomas and dolor.isdigit() and int(dolor) >= 7:
             prioridad = "Alta"
             valoracion = "Dolor dental intenso que requiere valoración prioritaria."
-            pruebas = "Exploración clínica y radiografía diagnóstica."
+            pruebas = "Exploración clínica y radiografía."
             alarmas = "Dolor intenso."
         elif "sangrado" in sintomas:
             prioridad = "Media"
-            valoracion = "Posibles signos de inflamación gingival o periodontal."
-            pruebas = "Valoración periodontal y revisión de higiene oral."
+            valoracion = "Posibles signos de inflamación gingival."
+            pruebas = "Valoración periodontal."
         elif "sensibilidad" in sintomas:
             prioridad = "Media"
             valoracion = "Posible hipersensibilidad dental."
-            pruebas = "Exploración clínica y valoración de desgaste, retracción o caries."
-        elif "caries" in sintomas:
-            prioridad = "Media"
-            valoracion = "Posible lesión de caries."
-            pruebas = "Exploración clínica y radiografía si procede."
-        elif "sarro" in sintomas or "placa" in sintomas:
-            prioridad = "Baja"
-            valoracion = "Posible acumulación de placa o cálculo dental."
-            pruebas = "Valoración periodontal e higiene profesional."
+            pruebas = "Exploración clínica y valoración de desgaste o caries."
 
         if not duracion:
-            informacion_faltante.append("duración de los síntomas")
-        if dolor_num is None:
-            informacion_faltante.append("intensidad del dolor")
-        if not antecedentes:
-            informacion_faltante.append("antecedentes relevantes")
+            informacion_faltante = "Duración de los síntomas."
 
-        faltante = ", ".join(informacion_faltante).capitalize() if informacion_faltante else "Ninguna."
-
-        ultimo_analisis.update({
-            "valoracion": valoracion,
-            "prioridad": prioridad,
-            "pruebas": pruebas,
-            "alarmas": alarmas
-        })
-
-        resultado = f"""ANÁLISIS CLÍNICO ORIENTATIVO
-
-Paciente:
-{paciente_seleccionado}
+        resultado = f"""
+ANÁLISIS CLÍNICO ORIENTATIVO
 
 Valoración:
 {valoracion}
@@ -489,41 +431,59 @@ Señales de alarma:
 {alarmas}
 
 Información pendiente:
-{faltante}
+{informacion_faltante}
 
 Antecedentes:
-{antecedentes if antecedentes else 'No indicados'}
+{antecedentes if antecedentes else "No indicados"}
 
 Aviso:
 Resultado orientativo. Requiere validación profesional.
 """
-        mostrar_resultado(resultado)
+        resultado_ia.delete("1.0", "end")
+        resultado_ia.insert("1.0", resultado)
 
     def guardar_analisis():
         sintomas = entrada_sintomas.get("1.0", "end").strip()
         duracion = entrada_duracion.get().strip()
         dolor = entrada_dolor.get().strip()
         antecedentes = entrada_antecedentes.get("1.0", "end").strip()
+        texto_resultado = resultado_ia.get("1.0", "end").strip()
 
         if not sintomas:
             messagebox.showwarning("Aviso", "Escribe primero los síntomas.")
             return
 
-        if not ultimo_analisis["prioridad"]:
+        if not texto_resultado:
             messagebox.showwarning("Aviso", "Analiza primero el caso.")
             return
+
+        prioridad = "Sin determinar"
+        for linea in texto_resultado.splitlines():
+            if linea.strip() in ["Baja", "Media", "Alta", "Urgente"]:
+                prioridad = linea.strip()
+                break
 
         conexion = sqlite3.connect("clinica.db")
         cursor = conexion.cursor()
         cursor.execute("""
             INSERT INTO analisis_ia (
-                paciente, fecha, sintomas, duracion, dolor,
-                antecedentes, fiebre, inflamacion, valoracion,
-                prioridad, pruebas, alarmas, estado
+                paciente,
+                fecha,
+                sintomas,
+                duracion,
+                dolor,
+                antecedentes,
+                fiebre,
+                inflamacion,
+                valoracion,
+                prioridad,
+                pruebas,
+                alarmas,
+                estado
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
-            paciente_seleccionado,
+            "Paciente no seleccionado",
             datetime.now().strftime("%d/%m/%Y %H:%M"),
             sintomas,
             duracion,
@@ -531,156 +491,40 @@ Resultado orientativo. Requiere validación profesional.
             antecedentes,
             int(tiene_fiebre.get()),
             int(tiene_inflamacion.get()),
-            ultimo_analisis["valoracion"],
-            ultimo_analisis["prioridad"],
-            ultimo_analisis["pruebas"],
-            ultimo_analisis["alarmas"],
+            texto_resultado,
+            prioridad,
+            "",
+            "",
             "Pendiente"
         ))
         conexion.commit()
         conexion.close()
 
-        messagebox.showinfo("Análisis guardado", "El análisis se ha guardado correctamente.")
+        messagebox.showinfo(
+            "Análisis guardado",
+            "El análisis se ha guardado correctamente."
+        )
 
     frame_acciones = tk.Frame(ventana_analisis)
-    frame_acciones.pack(pady=(0, 15))
+    frame_acciones.pack(pady=8)
 
     tk.Button(
         frame_acciones,
         text="Analizar caso",
         width=22,
         command=analizar_caso
-    ).pack(side="left", padx=6)
+    ).pack(side="left", padx=5)
 
     tk.Button(
         frame_acciones,
         text="Guardar análisis",
         width=22,
         command=guardar_analisis
-    ).pack(side="left", padx=6)
-
-
-def abrir_historial_ia():
-    """Muestra los análisis guardados y permite validarlos o rechazarlos."""
-    ventana_historial = tk.Toplevel(ventana)
-    ventana_historial.title("Historial de análisis IA")
-    ventana_historial.geometry("1050x600")
-
-    tk.Label(
-        ventana_historial,
-        text="Historial de análisis IA",
-        font=("Segoe UI", 17, "bold")
-    ).pack(pady=12)
-
-    columnas = ("ID", "Paciente", "Fecha", "Prioridad", "Estado")
-    historial = ttk.Treeview(ventana_historial, columns=columnas, show="headings", height=15)
-
-    anchos = {"ID": 55, "Paciente": 220, "Fecha": 160, "Prioridad": 100, "Estado": 120}
-    for columna in columnas:
-        historial.heading(columna, text=columna)
-        historial.column(columna, width=anchos[columna], anchor="center")
-
-    historial.pack(fill="both", expand=True, padx=20, pady=8)
-
-    def cargar_historial():
-        historial.delete(*historial.get_children())
-        conexion = sqlite3.connect("clinica.db")
-        cursor = conexion.cursor()
-        cursor.execute("""
-            SELECT id, paciente, fecha, prioridad, estado
-            FROM analisis_ia
-            ORDER BY id DESC
-        """)
-        registros = cursor.fetchall()
-        conexion.close()
-        for registro in registros:
-            historial.insert("", "end", values=registro)
-
-    def obtener_id_seleccionado():
-        seleccion = historial.selection()
-        if not seleccion:
-            messagebox.showwarning("Aviso", "Selecciona un análisis.")
-            return None
-        return historial.item(seleccion[0], "values")[0]
-
-    def cambiar_estado(nuevo_estado):
-        id_analisis = obtener_id_seleccionado()
-        if id_analisis is None:
-            return
-        conexion = sqlite3.connect("clinica.db")
-        cursor = conexion.cursor()
-        cursor.execute(
-            "UPDATE analisis_ia SET estado=? WHERE id=?",
-            (nuevo_estado, id_analisis)
-        )
-        conexion.commit()
-        conexion.close()
-        cargar_historial()
-
-    def ver_detalle():
-        id_analisis = obtener_id_seleccionado()
-        if id_analisis is None:
-            return
-
-        conexion = sqlite3.connect("clinica.db")
-        cursor = conexion.cursor()
-        cursor.execute("""
-            SELECT paciente, fecha, sintomas, duracion, dolor, antecedentes,
-                   fiebre, inflamacion, valoracion, prioridad, pruebas, alarmas, estado
-            FROM analisis_ia
-            WHERE id=?
-        """, (id_analisis,))
-        registro = cursor.fetchone()
-        conexion.close()
-
-        if not registro:
-            messagebox.showerror("Error", "No se ha encontrado el análisis.")
-            return
-
-        detalle = tk.Toplevel(ventana_historial)
-        detalle.title(f"Detalle análisis #{id_analisis}")
-        detalle.geometry("720x620")
-
-        campos = [
-            ("Paciente", registro[0]),
-            ("Fecha", registro[1]),
-            ("Síntomas", registro[2]),
-            ("Duración", registro[3] or "No indicada"),
-            ("Dolor", registro[4] if registro[4] is not None else "No indicado"),
-            ("Antecedentes", registro[5] or "No indicados"),
-            ("Fiebre", "Sí" if registro[6] else "No"),
-            ("Inflamación", "Sí" if registro[7] else "No"),
-            ("Valoración", registro[8]),
-            ("Prioridad", registro[9]),
-            ("Pruebas sugeridas", registro[10]),
-            ("Señales de alarma", registro[11]),
-            ("Estado", registro[12])
-        ]
-
-        texto = tk.Text(detalle, wrap="word", padx=15, pady=15)
-        texto.pack(fill="both", expand=True)
-        for etiqueta, valor in campos:
-            texto.insert("end", f"{etiqueta}:\n{valor}\n\n")
-        texto.config(state="disabled")
-
-    acciones = tk.Frame(ventana_historial)
-    acciones.pack(pady=10)
-
-    tk.Button(acciones, text="Ver detalle", width=18, command=ver_detalle).pack(side="left", padx=5)
-    tk.Button(acciones, text="Validar", width=18, command=lambda: cambiar_estado("Validado")).pack(side="left", padx=5)
-    tk.Button(acciones, text="Rechazar", width=18, command=lambda: cambiar_estado("Rechazado")).pack(side="left", padx=5)
-    tk.Button(acciones, text="Actualizar", width=18, command=cargar_historial).pack(side="left", padx=5)
-
-    historial.bind("<Double-1>", lambda event: ver_detalle())
-    cargar_historial()
+    ).pack(side="left", padx=5)
 
 ventana = tk.Tk()
 ventana.title("Gestión Clínica")
-ventana.geometry("1200x850")
-try:
-    ventana.state("zoomed")
-except tk.TclError:
-    pass
+ventana.geometry("1200x900")
 
 barra_menu = tk.Menu(ventana)
 ventana.config(menu=barra_menu)
@@ -695,7 +539,7 @@ titulo = tk.Label(
     text="DentalAI Manager",
     font=("Segoe UI", 20, "bold")
 )
-titulo.pack(pady=5)
+titulo.pack(pady=10)
 
 subtitulo = tk.Label(
     ventana,
@@ -779,7 +623,7 @@ tabla.column("Tratamiento", width=250, anchor="center")
 
 tabla.column("Próxima cita", width=120, anchor="center")
 
-tabla.pack(pady=10)
+tabla.pack(pady=20)
 
 def actualizar_contador():
     total = len(tabla.get_children())
@@ -872,11 +716,7 @@ def exportar_a_excel():
     for paciente in pacientes:
         hoja.append(paciente)
 
-    libro_excel.save("pacientes.xlsx")
-    messagebox.showinfo(
-        "Excel",
-        "Archivo pacientes.xlsx creado correctamente."
-    )
+        libro_excel.save("pacientes.xlsx")
         #messagebox.showinfo(
             #"Excel",
             #"Archivo pacientes.xlsx creado correctamente"
@@ -1040,7 +880,7 @@ boton_ver = tk.Button(
     width=35,
     command=mostrar_pacientes_ventana
 )
-boton_ver.pack(pady=2)
+boton_ver.pack(pady=3)
 
 boton_añadir = tk.Button(
     ventana,
@@ -1048,7 +888,7 @@ boton_añadir = tk.Button(
     width=35,
     command=abrir_ventana_añadir
 )
-boton_añadir.pack(pady=2)
+boton_añadir.pack(pady=3)
 
 boton_modificar = tk.Button(
     ventana,
@@ -1056,7 +896,7 @@ boton_modificar = tk.Button(
     width=35,
     command=modificar_paciente
 )
-boton_modificar.pack(pady=2)
+boton_modificar.pack(pady=3)
 
 
 
@@ -1066,7 +906,7 @@ boton_eliminar = tk.Button(
     width=35,
     command=eliminar_paciente
 )
-boton_eliminar.pack(pady=2)
+boton_eliminar.pack(pady=3)
 
 boton_excel = tk.Button(
     ventana,
@@ -1074,7 +914,7 @@ boton_excel = tk.Button(
     width=35,
     command=exportar_a_excel
 )
-boton_excel.pack(pady=2)
+boton_excel.pack(pady=3)
 
 boton_json = tk.Button(
     ventana,
@@ -1083,7 +923,7 @@ boton_json = tk.Button(
 command=cargar_pacientes_json
 )
 
-boton_json.pack(pady=2)
+boton_json.pack(pady=3)
 
 boton_ia = tk.Button(
     ventana,
@@ -1091,15 +931,7 @@ boton_ia = tk.Button(
     width=35,
     command=abrir_analisis_ia
 )
-boton_ia.pack(pady=2)
-
-boton_historial_ia = tk.Button(
-    ventana,
-    text="Historial IA",
-    width=35,
-    command=abrir_historial_ia
-)
-boton_historial_ia.pack(pady=2)
+boton_ia.pack(pady=3)
 
 
 
@@ -1119,10 +951,10 @@ def mostrar_estadisticas():
     cursor.execute("SELECT AVG(edad) FROM pacientes")
     edad_media = cursor.fetchone()[0]
 
-    cursor.execute("SELECT COUNT(*) FROM pacientes WHERE edad < 18")
+    cursor.execute("SELECT tratamiento, COUNT(*) FROM pacientes WHERE edad < 18")
     menores = cursor.fetchone()[0]
 
-    cursor.execute("SELECT COUNT(*) FROM pacientes WHERE edad >= 18")
+    cursor.execute("SELECT tratamiento, COUNT(*) FROM pacientes WHERE edad >= 18")
     mayores = cursor.fetchone()[0]
                    
     cursor.execute("SELECT tratamiento, COUNT(*) AS cantidad FROM pacientes GROUP BY tratamiento ORDER BY cantidad DESC LIMIT 1")
@@ -1150,7 +982,7 @@ boton_informe = tk.Button(
         width=35,
         command=generar_informe
     )
-boton_informe.pack(pady=2)
+boton_informe.pack(pady=3)
 
 boton_estadisticas = tk.Button(
     ventana,
@@ -1158,7 +990,7 @@ boton_estadisticas = tk.Button(
     width=35,
     command=mostrar_estadisticas
 )
-boton_estadisticas.pack(pady=2)
+boton_estadisticas.pack(pady=3)
 
 boton_salir = tk.Button(
     ventana,
@@ -1166,7 +998,7 @@ boton_salir = tk.Button(
     width=35,
     command=ventana.destroy
 )
-boton_salir.pack(pady=2)
+boton_salir.pack(pady=3)
 
 
 

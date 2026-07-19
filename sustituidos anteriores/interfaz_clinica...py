@@ -676,11 +676,7 @@ def abrir_historial_ia():
 
 ventana = tk.Tk()
 ventana.title("Gestión Clínica")
-ventana.geometry("1200x850")
-try:
-    ventana.state("zoomed")
-except tk.TclError:
-    pass
+ventana.geometry("1200x900")
 
 barra_menu = tk.Menu(ventana)
 ventana.config(menu=barra_menu)
@@ -695,7 +691,7 @@ titulo = tk.Label(
     text="DentalAI Manager",
     font=("Segoe UI", 20, "bold")
 )
-titulo.pack(pady=5)
+titulo.pack(pady=10)
 
 subtitulo = tk.Label(
     ventana,
@@ -779,7 +775,7 @@ tabla.column("Tratamiento", width=250, anchor="center")
 
 tabla.column("Próxima cita", width=120, anchor="center")
 
-tabla.pack(pady=10)
+tabla.pack(pady=20)
 
 def actualizar_contador():
     total = len(tabla.get_children())
@@ -1040,7 +1036,7 @@ boton_ver = tk.Button(
     width=35,
     command=mostrar_pacientes_ventana
 )
-boton_ver.pack(pady=2)
+boton_ver.pack(pady=3)
 
 boton_añadir = tk.Button(
     ventana,
@@ -1048,7 +1044,7 @@ boton_añadir = tk.Button(
     width=35,
     command=abrir_ventana_añadir
 )
-boton_añadir.pack(pady=2)
+boton_añadir.pack(pady=3)
 
 boton_modificar = tk.Button(
     ventana,
@@ -1056,7 +1052,7 @@ boton_modificar = tk.Button(
     width=35,
     command=modificar_paciente
 )
-boton_modificar.pack(pady=2)
+boton_modificar.pack(pady=3)
 
 
 
@@ -1066,7 +1062,7 @@ boton_eliminar = tk.Button(
     width=35,
     command=eliminar_paciente
 )
-boton_eliminar.pack(pady=2)
+boton_eliminar.pack(pady=3)
 
 boton_excel = tk.Button(
     ventana,
@@ -1074,7 +1070,7 @@ boton_excel = tk.Button(
     width=35,
     command=exportar_a_excel
 )
-boton_excel.pack(pady=2)
+boton_excel.pack(pady=3)
 
 boton_json = tk.Button(
     ventana,
@@ -1083,7 +1079,7 @@ boton_json = tk.Button(
 command=cargar_pacientes_json
 )
 
-boton_json.pack(pady=2)
+boton_json.pack(pady=3)
 
 boton_ia = tk.Button(
     ventana,
@@ -1091,7 +1087,7 @@ boton_ia = tk.Button(
     width=35,
     command=abrir_analisis_ia
 )
-boton_ia.pack(pady=2)
+boton_ia.pack(pady=3)
 
 boton_historial_ia = tk.Button(
     ventana,
@@ -1099,7 +1095,7 @@ boton_historial_ia = tk.Button(
     width=35,
     command=abrir_historial_ia
 )
-boton_historial_ia.pack(pady=2)
+boton_historial_ia.pack(pady=3)
 
 
 
@@ -1150,7 +1146,7 @@ boton_informe = tk.Button(
         width=35,
         command=generar_informe
     )
-boton_informe.pack(pady=2)
+boton_informe.pack(pady=3)
 
 boton_estadisticas = tk.Button(
     ventana,
@@ -1158,7 +1154,7 @@ boton_estadisticas = tk.Button(
     width=35,
     command=mostrar_estadisticas
 )
-boton_estadisticas.pack(pady=2)
+boton_estadisticas.pack(pady=3)
 
 boton_salir = tk.Button(
     ventana,
@@ -1166,7 +1162,7 @@ boton_salir = tk.Button(
     width=35,
     command=ventana.destroy
 )
-boton_salir.pack(pady=2)
+boton_salir.pack(pady=3)
 
 
 
