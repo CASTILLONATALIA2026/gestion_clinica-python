@@ -561,63 +561,28 @@ Resultado orientativo. Requiere validación profesional.
 
 
 def abrir_historial_ia():
-    """Muestra, filtra y valida los análisis guardados por el Copilot."""
+    """Muestra los análisis guardados y permite validarlos o rechazarlos."""
     ventana_historial = tk.Toplevel(ventana)
     ventana_historial.title("Historial de análisis IA")
-    ventana_historial.geometry("1100x680")
-    ventana_historial.minsize(900, 560)
+    ventana_historial.geometry("1050x600")
 
     tk.Label(
         ventana_historial,
         text="Historial de análisis IA",
-        font=("Segoe UI", 18, "bold")
-    ).pack(pady=(14, 4))
-
-    resumen = tk.Label(
-        ventana_historial,
-        text="",
-        font=("Segoe UI", 10, "bold")
-    )
-    resumen.pack(pady=(0, 8))
-
-    filtros = tk.Frame(ventana_historial)
-    filtros.pack(fill="x", padx=20, pady=(0, 8))
-
-    tk.Label(filtros, text="Filtrar por estado:").pack(side="left")
-    estado_filtro = tk.StringVar(value="Todos")
-    combo_estado = ttk.Combobox(
-        filtros,
-        textvariable=estado_filtro,
-        values=("Todos", "Pendiente", "Validado", "Rechazado"),
-        state="readonly",
-        width=16
-    )
-    combo_estado.pack(side="left", padx=8)
-
-    tk.Label(filtros, text="Buscar paciente:").pack(side="left", padx=(20, 0))
-    entrada_buscar = tk.Entry(filtros, width=28)
-    entrada_buscar.pack(side="left", padx=8)
+        font=("Segoe UI", 17, "bold")
+    ).pack(pady=12)
 
     columnas = ("ID", "Paciente", "Fecha", "Prioridad", "Estado")
-    historial = ttk.Treeview(
-        ventana_historial,
-        columns=columnas,
-        show="headings",
-        height=16
-    )
+    historial = ttk.Treeview(ventana_historial, columns=columnas, show="headings", height=15)
 
-    anchos = {"ID": 60, "Paciente": 260, "Fecha": 170, "Prioridad": 110, "Estado": 130}
+    anchos = {"ID": 55, "Paciente": 220, "Fecha": 160, "Prioridad": 100, "Estado": 120}
     for columna in columnas:
         historial.heading(columna, text=columna)
         historial.column(columna, width=anchos[columna], anchor="center")
 
-    historial.tag_configure("Pendiente", background="#fff4cc")
-    historial.tag_configure("Validado", background="#dcfce7")
-    historial.tag_configure("Rechazado", background="#fee2e2")
-
     historial.pack(fill="both", expand=True, padx=20, pady=8)
 
-    def cargar_historial(*_):
+    def cargar_historial():
         historial.delete(*historial.get_children())
         conexion = sqlite3.connect("clinica.db")
         cursor = conexion.cursor()
@@ -628,25 +593,8 @@ def abrir_historial_ia():
         """)
         registros = cursor.fetchall()
         conexion.close()
-
-        filtro = estado_filtro.get()
-        busqueda = entrada_buscar.get().strip().lower()
-
         for registro in registros:
-            if filtro != "Todos" and registro[4] != filtro:
-                continue
-            if busqueda and busqueda not in str(registro[1]).lower():
-                continue
-            historial.insert("", "end", values=registro, tags=(registro[4],))
-
-        total = len(registros)
-        pendientes = sum(1 for r in registros if r[4] == "Pendiente")
-        validados = sum(1 for r in registros if r[4] == "Validado")
-        rechazados = sum(1 for r in registros if r[4] == "Rechazado")
-        resumen.config(
-            text=(f"Total: {total}   |   Pendientes: {pendientes}   |   "
-                  f"Validados: {validados}   |   Rechazados: {rechazados}")
-        )
+            historial.insert("", "end", values=registro)
 
     def obtener_id_seleccionado():
         seleccion = historial.selection()
@@ -659,14 +607,6 @@ def abrir_historial_ia():
         id_analisis = obtener_id_seleccionado()
         if id_analisis is None:
             return
-
-        confirmar = messagebox.askyesno(
-            "Confirmar cambio",
-            f"¿Cambiar el análisis #{id_analisis} a '{nuevo_estado}'?"
-        )
-        if not confirmar:
-            return
-
         conexion = sqlite3.connect("clinica.db")
         cursor = conexion.cursor()
         cursor.execute(
@@ -677,7 +617,11 @@ def abrir_historial_ia():
         conexion.close()
         cargar_historial()
 
-    def obtener_detalle(id_analisis):
+    def ver_detalle():
+        id_analisis = obtener_id_seleccionado()
+        if id_analisis is None:
+            return
+
         conexion = sqlite3.connect("clinica.db")
         cursor = conexion.cursor()
         cursor.execute("""
@@ -688,33 +632,14 @@ def abrir_historial_ia():
         """, (id_analisis,))
         registro = cursor.fetchone()
         conexion.close()
-        return registro
 
-    def ver_detalle():
-        id_analisis = obtener_id_seleccionado()
-        if id_analisis is None:
-            return
-
-        registro = obtener_detalle(id_analisis)
         if not registro:
             messagebox.showerror("Error", "No se ha encontrado el análisis.")
             return
 
         detalle = tk.Toplevel(ventana_historial)
         detalle.title(f"Detalle análisis #{id_analisis}")
-        detalle.geometry("760x680")
-
-        tk.Label(
-            detalle,
-            text=f"Análisis IA #{id_analisis}",
-            font=("Segoe UI", 16, "bold")
-        ).pack(pady=(12, 4))
-
-        tk.Label(
-            detalle,
-            text=f"Estado: {registro[12]}",
-            font=("Segoe UI", 11, "bold")
-        ).pack(pady=(0, 8))
+        detalle.geometry("720x620")
 
         campos = [
             ("Paciente", registro[0]),
@@ -727,94 +652,25 @@ def abrir_historial_ia():
             ("Inflamación", "Sí" if registro[7] else "No"),
             ("Valoración", registro[8]),
             ("Prioridad", registro[9]),
-            ("Pruebas sugeridas", registro[10] or "No indicadas"),
-            ("Señales de alarma", registro[11] or "No indicadas"),
+            ("Pruebas sugeridas", registro[10]),
+            ("Señales de alarma", registro[11]),
             ("Estado", registro[12])
         ]
 
         texto = tk.Text(detalle, wrap="word", padx=15, pady=15)
-        texto.pack(fill="both", expand=True, padx=15, pady=8)
+        texto.pack(fill="both", expand=True)
         for etiqueta, valor in campos:
             texto.insert("end", f"{etiqueta}:\n{valor}\n\n")
         texto.config(state="disabled")
 
-        def exportar_pdf_analisis():
-            ruta = filedialog.asksaveasfilename(
-                defaultextension=".pdf",
-                filetypes=[("Archivo PDF", "*.pdf")],
-                initialfile=f"analisis_IA_{registro[0]}_{id_analisis}.pdf"
-            )
-            if not ruta:
-                return
-
-            pdf = canvas.Canvas(ruta, pagesize=A4)
-            ancho, alto = A4
-            margen = 55
-            y = alto - 55
-
-            pdf.setTitle(f"Análisis IA #{id_analisis}")
-            pdf.setFont("Helvetica-Bold", 17)
-            pdf.drawString(margen, y, "DENTALAI MANAGER")
-            y -= 24
-            pdf.setFont("Helvetica-Bold", 13)
-            pdf.drawString(margen, y, f"ANÁLISIS IA #{id_analisis}")
-            y -= 14
-            pdf.line(margen, y, ancho - margen, y)
-            y -= 25
-
-            for etiqueta, valor in campos:
-                pdf.setFont("Helvetica-Bold", 10)
-                pdf.drawString(margen, y, f"{etiqueta}:")
-                y -= 15
-                pdf.setFont("Helvetica", 10)
-                lineas = str(valor).splitlines() or [""]
-                for linea in lineas:
-                    while len(linea) > 90:
-                        pdf.drawString(margen + 10, y, linea[:90])
-                        linea = linea[90:]
-                        y -= 14
-                    pdf.drawString(margen + 10, y, linea)
-                    y -= 14
-                    if y < 60:
-                        pdf.showPage()
-                        y = alto - 55
-                y -= 8
-
-            pdf.setFont("Helvetica-Oblique", 8)
-            pdf.drawCentredString(
-                ancho / 2,
-                35,
-                "Resultado orientativo sujeto a validación profesional"
-            )
-            pdf.save()
-            messagebox.showinfo("PDF", "El análisis se ha exportado correctamente.")
-
-        acciones_detalle = tk.Frame(detalle)
-        acciones_detalle.pack(pady=(0, 12))
-        tk.Button(
-            acciones_detalle,
-            text="Exportar a PDF",
-            width=20,
-            command=exportar_pdf_analisis
-        ).pack(side="left", padx=6)
-        tk.Button(
-            acciones_detalle,
-            text="Cerrar",
-            width=16,
-            command=detalle.destroy
-        ).pack(side="left", padx=6)
-
     acciones = tk.Frame(ventana_historial)
     acciones.pack(pady=10)
 
-    tk.Button(acciones, text="Ver detalle", width=17, command=ver_detalle).pack(side="left", padx=4)
-    tk.Button(acciones, text="Validar", width=17, command=lambda: cambiar_estado("Validado")).pack(side="left", padx=4)
-    tk.Button(acciones, text="Rechazar", width=17, command=lambda: cambiar_estado("Rechazado")).pack(side="left", padx=4)
-    tk.Button(acciones, text="Marcar pendiente", width=17, command=lambda: cambiar_estado("Pendiente")).pack(side="left", padx=4)
-    tk.Button(acciones, text="Actualizar", width=17, command=cargar_historial).pack(side="left", padx=4)
+    tk.Button(acciones, text="Ver detalle", width=18, command=ver_detalle).pack(side="left", padx=5)
+    tk.Button(acciones, text="Validar", width=18, command=lambda: cambiar_estado("Validado")).pack(side="left", padx=5)
+    tk.Button(acciones, text="Rechazar", width=18, command=lambda: cambiar_estado("Rechazado")).pack(side="left", padx=5)
+    tk.Button(acciones, text="Actualizar", width=18, command=cargar_historial).pack(side="left", padx=5)
 
-    combo_estado.bind("<<ComboboxSelected>>", cargar_historial)
-    entrada_buscar.bind("<KeyRelease>", cargar_historial)
     historial.bind("<Double-1>", lambda event: ver_detalle())
     cargar_historial()
 
