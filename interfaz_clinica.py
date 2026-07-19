@@ -24,6 +24,25 @@ def crear_base_datos():
         )
     """)
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS analisis_ia (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            paciente TEXT NOT NULL,
+            fecha TEXT NOT NULL,
+            sintomas TEXT NOT NULL,
+            duracion TEXT,
+            dolor INTEGER,
+            antecedentes TEXT,
+            fiebre INTEGER,
+            inflamacion INTEGER,
+            valoracion TEXT,
+            prioridad TEXT,
+            pruebas TEXT,
+            alarmas TEXT,
+            estado TEXT DEFAULT 'Pendiente'
+        )
+    """)
+
     conexion.commit()
     conexion.close()
 
@@ -306,64 +325,33 @@ Generado por DentalAI Manager.
     boton_pdf.pack(pady=10)
 
 def abrir_analisis_ia():
-
     ventana_analisis = tk.Toplevel(ventana)
     ventana_analisis.title("DentalAI Copilot")
-    ventana_analisis.geometry("750x650")
-    ventana_analisis.resizable(False, True)
+    ventana_analisis.geometry("750x720")
+    ventana_analisis.resizable(False, False)
 
     titulo = tk.Label(
         ventana_analisis,
         text="Analizar caso con IA",
         font=("Segoe UI", 18, "bold")
     )
-    titulo.pack(pady=15)
+    titulo.pack(pady=12)
 
-    tk.Label(
-        ventana_analisis,
-        text="Síntomas principales"
-    ).pack()
+    tk.Label(ventana_analisis, text="Síntomas principales").pack()
+    entrada_sintomas = tk.Text(ventana_analisis, height=4, width=70)
+    entrada_sintomas.pack(pady=4)
 
-    entrada_sintomas = tk.Text(
-        ventana_analisis,
-        height=4,
-        width=70
-    )
-    entrada_sintomas.pack(pady=5)
+    tk.Label(ventana_analisis, text="Duración de los síntomas").pack()
+    entrada_duracion = tk.Entry(ventana_analisis, width=40)
+    entrada_duracion.pack(pady=4)
 
-    tk.Label(
-        ventana_analisis,
-        text="Duración de los síntomas"
-    ).pack()
+    tk.Label(ventana_analisis, text="Dolor de 0 a 10").pack()
+    entrada_dolor = tk.Entry(ventana_analisis, width=40)
+    entrada_dolor.pack(pady=4)
 
-    entrada_duracion = tk.Entry(
-        ventana_analisis,
-        width=40
-    )
-    entrada_duracion.pack(pady=5)
-
-    tk.Label(
-        ventana_analisis,
-        text="Dolor de 0 a 10"
-    ).pack()
-
-    entrada_dolor = tk.Entry(
-        ventana_analisis,
-        width=40
-    )
-    entrada_dolor.pack(pady=5)
-
-    tk.Label(
-        ventana_analisis,
-        text="Antecedentes relevantes"
-    ).pack()
-
-    entrada_antecedentes = tk.Text(
-        ventana_analisis,
-        height=3,
-        width=70
-    )
-    entrada_antecedentes.pack(pady=5)
+    tk.Label(ventana_analisis, text="Antecedentes relevantes").pack()
+    entrada_antecedentes = tk.Text(ventana_analisis, height=3, width=70)
+    entrada_antecedentes.pack(pady=4)
 
     tiene_fiebre = tk.BooleanVar()
     tiene_inflamacion = tk.BooleanVar()
@@ -380,18 +368,15 @@ def abrir_analisis_ia():
         variable=tiene_inflamacion
     ).pack()
 
-    
-    
     resultado_ia = tk.Text(
         ventana_analisis,
-        height=13,
+        height=8,
         width=75,
         wrap="word"
     )
-    resultado_ia.pack(pady=10)
+    resultado_ia.pack(pady=6)
 
     def analizar_caso():
-
         sintomas = entrada_sintomas.get("1.0", "end").strip().lower()
         duracion = entrada_duracion.get().strip()
         dolor = entrada_dolor.get().strip()
@@ -406,17 +391,17 @@ def abrir_analisis_ia():
         if tiene_fiebre.get() and tiene_inflamacion.get():
             prioridad = "Urgente"
             valoracion = "Posible proceso infeccioso odontógeno."
-            pruebas = "Exploración clínica y radiográfica diagnóstica."
+            pruebas = "Exploración clínica y radiografía diagnóstica."
             alarmas = "Fiebre e inflamación."
-        elif tiene_inflamacion.get() and dolor.isdigit() and int(dolor) >=7:
+        elif tiene_inflamacion.get() and dolor.isdigit() and int(dolor) >= 7:
             prioridad = "Alta"
             valoracion = "Dolor intenso con inflamación. Requiere valoración prioritaria."
-            pruebas = "Exploración clínica y radiográfia diagnóstica."
+            pruebas = "Exploración clínica y radiografía diagnóstica."
             alarmas = "Dolor intenso e inflamación."
-        elif "dolor" in sintomas and dolor.isdigit() and int (dolor) >= 7:
+        elif "dolor" in sintomas and dolor.isdigit() and int(dolor) >= 7:
             prioridad = "Alta"
             valoracion = "Dolor dental intenso que requiere valoración prioritaria."
-            pruebas = "Exploración clínica y radiográfia."
+            pruebas = "Exploración clínica y radiografía."
             alarmas = "Dolor intenso."
         elif "sangrado" in sintomas:
             prioridad = "Media"
@@ -426,16 +411,17 @@ def abrir_analisis_ia():
             prioridad = "Media"
             valoracion = "Posible hipersensibilidad dental."
             pruebas = "Exploración clínica y valoración de desgaste o caries."
+
         if not duracion:
-            informacion_faltante = "Duración de los síntomas." 
-        
+            informacion_faltante = "Duración de los síntomas."
+
         resultado = f"""
 ANÁLISIS CLÍNICO ORIENTATIVO
 
 Valoración:
 {valoracion}
 
-Prioridad
+Prioridad:
 {prioridad}
 
 Pruebas sugeridas:
@@ -447,25 +433,95 @@ Señales de alarma:
 Información pendiente:
 {informacion_faltante}
 
-Antecendente:
+Antecedentes:
 {antecedentes if antecedentes else "No indicados"}
 
 Aviso:
 Resultado orientativo. Requiere validación profesional.
 """
-        resultado_ia.delete("1.0","end")
+        resultado_ia.delete("1.0", "end")
         resultado_ia.insert("1.0", resultado)
 
+    def guardar_analisis():
+        sintomas = entrada_sintomas.get("1.0", "end").strip()
+        duracion = entrada_duracion.get().strip()
+        dolor = entrada_dolor.get().strip()
+        antecedentes = entrada_antecedentes.get("1.0", "end").strip()
+        texto_resultado = resultado_ia.get("1.0", "end").strip()
+
+        if not sintomas:
+            messagebox.showwarning("Aviso", "Escribe primero los síntomas.")
+            return
+
+        if not texto_resultado:
+            messagebox.showwarning("Aviso", "Analiza primero el caso.")
+            return
+
+        prioridad = "Sin determinar"
+        for linea in texto_resultado.splitlines():
+            if linea.strip() in ["Baja", "Media", "Alta", "Urgente"]:
+                prioridad = linea.strip()
+                break
+
+        conexion = sqlite3.connect("clinica.db")
+        cursor = conexion.cursor()
+        cursor.execute("""
+            INSERT INTO analisis_ia (
+                paciente,
+                fecha,
+                sintomas,
+                duracion,
+                dolor,
+                antecedentes,
+                fiebre,
+                inflamacion,
+                valoracion,
+                prioridad,
+                pruebas,
+                alarmas,
+                estado
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            "Paciente no seleccionado",
+            datetime.now().strftime("%d/%m/%Y %H:%M"),
+            sintomas,
+            duracion,
+            int(dolor) if dolor.isdigit() else None,
+            antecedentes,
+            int(tiene_fiebre.get()),
+            int(tiene_inflamacion.get()),
+            texto_resultado,
+            prioridad,
+            "",
+            "",
+            "Pendiente"
+        ))
+        conexion.commit()
+        conexion.close()
+
+        messagebox.showinfo(
+            "Análisis guardado",
+            "El análisis se ha guardado correctamente."
+        )
+
+    frame_acciones = tk.Frame(ventana_analisis)
+    frame_acciones.pack(pady=8)
+
     tk.Button(
-        ventana_analisis,
+        frame_acciones,
         text="Analizar caso",
-        width=30,
+        width=22,
         command=analizar_caso
-    ).pack(pady=10)
-                    
+    ).pack(side="left", padx=5)
 
+    tk.Button(
+        frame_acciones,
+        text="Guardar análisis",
+        width=22,
+        command=guardar_analisis
+    ).pack(side="left", padx=5)
 
-    
 ventana = tk.Tk()
 ventana.title("Gestión Clínica")
 ventana.geometry("1200x900")
