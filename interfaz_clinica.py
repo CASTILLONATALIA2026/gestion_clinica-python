@@ -305,6 +305,166 @@ Generado por DentalAI Manager.
 
     boton_pdf.pack(pady=10)
 
+def abrir_analisis_ia():
+
+    ventana_analisis = tk.Toplevel(ventana)
+    ventana_analisis.title("DentalAI Copilot")
+    ventana_analisis.geometry("750x650")
+    ventana_analisis.resizable(False, True)
+
+    titulo = tk.Label(
+        ventana_analisis,
+        text="Analizar caso con IA",
+        font=("Segoe UI", 18, "bold")
+    )
+    titulo.pack(pady=15)
+
+    tk.Label(
+        ventana_analisis,
+        text="Síntomas principales"
+    ).pack()
+
+    entrada_sintomas = tk.Text(
+        ventana_analisis,
+        height=4,
+        width=70
+    )
+    entrada_sintomas.pack(pady=5)
+
+    tk.Label(
+        ventana_analisis,
+        text="Duración de los síntomas"
+    ).pack()
+
+    entrada_duracion = tk.Entry(
+        ventana_analisis,
+        width=40
+    )
+    entrada_duracion.pack(pady=5)
+
+    tk.Label(
+        ventana_analisis,
+        text="Dolor de 0 a 10"
+    ).pack()
+
+    entrada_dolor = tk.Entry(
+        ventana_analisis,
+        width=40
+    )
+    entrada_dolor.pack(pady=5)
+
+    tk.Label(
+        ventana_analisis,
+        text="Antecedentes relevantes"
+    ).pack()
+
+    entrada_antecedentes = tk.Text(
+        ventana_analisis,
+        height=3,
+        width=70
+    )
+    entrada_antecedentes.pack(pady=5)
+
+    tiene_fiebre = tk.BooleanVar()
+    tiene_inflamacion = tk.BooleanVar()
+
+    tk.Checkbutton(
+        ventana_analisis,
+        text="Fiebre",
+        variable=tiene_fiebre
+    ).pack()
+
+    tk.Checkbutton(
+        ventana_analisis,
+        text="Inflamación",
+        variable=tiene_inflamacion
+    ).pack()
+
+    
+    
+    resultado_ia = tk.Text(
+        ventana_analisis,
+        height=13,
+        width=75,
+        wrap="word"
+    )
+    resultado_ia.pack(pady=10)
+
+    def analizar_caso():
+
+        sintomas = entrada_sintomas.get("1.0", "end").strip().lower()
+        duracion = entrada_duracion.get().strip()
+        dolor = entrada_dolor.get().strip()
+        antecedentes = entrada_antecedentes.get("1.0", "end").strip()
+
+        prioridad = "Baja"
+        valoracion = "No se ha identificado una situación concreta."
+        pruebas = "Exploración clínica general."
+        alarmas = "No se han detectado señales de alarma."
+        informacion_faltante = "Ninguna."
+
+        if tiene_fiebre.get() and tiene_inflamacion.get():
+            prioridad = "Urgente"
+            valoracion = "Posible proceso infeccioso odontógeno."
+            pruebas = "Exploración clínica y radiográfica diagnóstica."
+            alarmas = "Fiebre e inflamación."
+        elif tiene_inflamacion.get() and dolor.isdigit() and int(dolor) >=7:
+            prioridad = "Alta"
+            valoracion = "Dolor intenso con inflamación. Requiere valoración prioritaria."
+            pruebas = "Exploración clínica y radiográfia diagnóstica."
+            alarmas = "Dolor intenso e inflamación."
+        elif "dolor" in sintomas and dolor.isdigit() and int (dolor) >= 7:
+            prioridad = "Alta"
+            valoracion = "Dolor dental intenso que requiere valoración prioritaria."
+            pruebas = "Exploración clínica y radiográfia."
+            alarmas = "Dolor intenso."
+        elif "sangrado" in sintomas:
+            prioridad = "Media"
+            valoracion = "Posibles signos de inflamación gingival."
+            pruebas = "Valoración periodontal."
+        elif "sensibilidad" in sintomas:
+            prioridad = "Media"
+            valoracion = "Posible hipersensibilidad dental."
+            pruebas = "Exploración clínica y valoración de desgaste o caries."
+        if not duracion:
+            informacion_faltante = "Duración de los síntomas." 
+        
+        resultado = f"""
+ANÁLISIS CLÍNICO ORIENTATIVO
+
+Valoración:
+{valoracion}
+
+Prioridad
+{prioridad}
+
+Pruebas sugeridas:
+{pruebas}
+
+Señales de alarma:
+{alarmas}
+
+Información pendiente:
+{informacion_faltante}
+
+Antecendente:
+{antecedentes if antecedentes else "No indicados"}
+
+Aviso:
+Resultado orientativo. Requiere validación profesional.
+"""
+        resultado_ia.delete("1.0","end")
+        resultado_ia.insert("1.0", resultado)
+
+    tk.Button(
+        ventana_analisis,
+        text="Analizar caso",
+        width=30,
+        command=analizar_caso
+    ).pack(pady=10)
+                    
+
+
     
 ventana = tk.Tk()
 ventana.title("Gestión Clínica")
@@ -711,9 +871,9 @@ boton_json.pack(pady=3)
 
 boton_ia = tk.Button(
     ventana,
-    text="Asistente IA Dental",
+    text="DentalAI Copilot",
     width=35,
-    command=abrir_asistente_ia
+    command=abrir_analisis_ia
 )
 boton_ia.pack(pady=3)
 
